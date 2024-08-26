@@ -1,7 +1,6 @@
-# Configure the Azure provider
 provider "azurerm" {
-    features {}
-  }
+  features = {}
+}
 
 # Variables
 variable "resource_group_name" {
@@ -21,12 +20,12 @@ variable "location" {
 
 variable "disk_size_gb" {
   type        = number
-  default     = 4
+  default     = 100  # Adjust the size as needed
 }
 
 variable "disk_name" {
   type        = string
-  default     = "Server-01-DataDisk-02"
+  default     = "Server-01-DataDisk-01"
 }
 
 variable "script_url" {
@@ -44,10 +43,22 @@ variable "storage_account_key" {
   default     = "ZX2SZs4U3wg77DJF2OuhqFYh7plD7JeTYdXKcvE/L2KV67ChyLlx4fLIqCXXmSmkcCff2P9J62uS+AStAKU/rw=="
 }
 
-# Data source to get the existing VM
-data "azurerm_virtual_machine" "existing_vm" {
-  name                = var.vm_name
-  resource_group_name = var.resource_group_name
+# Data Disk
+resource "azurerm_managed_disk" "data_disk" {
+  name                 = var.disk_name
+  location             = var.location
+  resource_group_name  = var.resource_group_name
+  storage_account_type = "Standard_LRS"
+  disk_size_gb         = var.disk_size_gb
+  create_option        = "Empty"
+}
+
+# Attach Data Disk to VM
+resource "azurerm_virtual_machine_data_disk_attachment" "data_disk_attachment" {
+  managed_disk_id    = azurerm_managed_disk.data_disk.id
+  virtual_machine_id = data.azurerm_virtual_machine.existing_vm.id
+  lun                = 1  # Logical Unit Number, adjust if needed
+  caching            = "ReadWrite"
 }
 
 # Define a virtual machine extension for Windows VM
@@ -71,4 +82,10 @@ resource "azurerm_virtual_machine_extension" "winrm" {
       "storageAccountKey": "${var.storage_account_key}"
     }
   PROTECTED_SETTINGS
+}
+
+# Data source to get the existing VM
+data "azurerm_virtual_machine" "existing_vm" {
+  name                = var.vm_name
+  resource_group_name = var.resource_group_name
 }
