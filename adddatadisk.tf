@@ -26,7 +26,7 @@ variable "disk_size_gb" {
 
 variable "disk_name" {
   type        = string
-  default     = "Server-01-DataDisk-01"
+  default     = "Server-01-DataDisk-02"
 }
 
 variable "script_url" {
