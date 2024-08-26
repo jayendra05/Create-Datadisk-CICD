@@ -1,7 +1,8 @@
+# Configure the Azure provider
 provider "azurerm" {
-  features = {}
-}
-
+    features {}
+  
+  }
 # Variables
 variable "resource_group_name" {
   type        = string
